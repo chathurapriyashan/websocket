@@ -34,16 +34,42 @@ function convertoBinary(buffer){
 
 }
 
-const server = net.createServer((socket)=>{
+function encodeMessage(text){
+  if(text.len > 6) return console.log("can't send message becourse mssage length greater than 6");
+
+    // 64 bit (8 byte message format) 
+    const msgDataUArray = new Uint8Array(2 + text.length);
     
-    socket.once('data' , (buffer)=>{
+    //set fin and opcode
+    msgDataUArray[0] = 128  + 1;
+    
+    //set payload len
+    msgDataUArray[1] = text.length;
+
+    //set payload
+    const textUArray = new TextEncoder().encode(text);
+
+    //insert to buffer to text data
+    for(let i = 0 ; i < msgDataUArray[1] ; i++){
+      msgDataUArray[2 + i] = textUArray[i];
+    }
+
+    return Buffer.from(msgDataUArray);
+
+}
+
+
+
+
+const server = net.createServer((socket)=>{
+
+      socket.once('data' , (buffer)=>{
         const req = buffer.toString();
         fs.writeFileSync('./buffer.txt' , buffer.toString() );
         const key = req.match(/Sec-WebSocket-Key: (.+)/i)[1];
         const secAccpetKey = crypto.createHash("sha1").update(key + MAGIC_STRING ).digest('base64');
 
 
-        // console.log(key , secAccpetKey);
 
         const headers = [
             'HTTP/1.1 101 Switching Protocols',
@@ -54,39 +80,39 @@ const server = net.createServer((socket)=>{
         ];
 
         socket.write(headers.join("\r\n"));
-
+      })
 
         socket.on("data" , (buffer)=>{
-            const binary = convertoBinary(buffer);
-            const fin = binary[1];
-            const opcode = binary.slice(4 , 8);
-            const mask = binary[8];
-            const payloadLen = binary.slice(9 , 16);
-            const maskKey = binary.slice(16 , 48);
-            const payload = binary.slice(48 , -1);
-            
-            const decodeArray = new Uint8Array(buffer[1] - 128 );
+          const binary = convertoBinary(buffer);
+          const fin = binary[1];
+          const opcode = binary.slice(4 , 8);
+          const mask = binary[8];
+          const payloadLen = binary.slice(9 , 16);
+          const maskKey = binary.slice(16 , 48);
+          const payload = binary.slice(48 , -1);
+          
+          const decodeArray = new Uint8Array(Math.abs(buffer[1] - 128));
 
 
-            for(let i = 0 ; i < buffer[1] - 128  ; i++){
-              decodeArray[i] = buffer[6 + i] ^ buffer[2 + i % 4]
-            }
+          for(let i = 0 ; i < buffer[1] - 128  ; i++){
+            decodeArray[i] = buffer[6 + i] ^ buffer[2 + i % 4]
+          }
 
             const text = new TextDecoder().decode(decodeArray);
-            
-            console.log({fin});
-            console.log({opcode});
-            console.log({mask});
-            console.log({payloadLen});
-            console.log({maskKey});
-            console.log({payload});
-            console.log({decodeArray})
-            console.log({text})
+              
+              console.log({fin});
+              console.log({opcode});
+              console.log({mask});
+              console.log({payloadLen});
+              console.log({maskKey});
+              console.log({payload});
+              console.log({decodeArray})
+              console.log({text})
+
+            })
         })
-    })
-})
 
 
-server.listen( 8080 ,"127.0.0.1", () => {
+server.listen( 8080 ,"0.0.0.0", () => {
   console.log('opened server on', server.address());
 });

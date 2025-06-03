@@ -1,14 +1,16 @@
 GET / HTTP/1.1
-Host: localhost:8080
-Connection: Upgrade
+Host: 172.20.10.10:8080
+Origin: http://172.20.10.10:3000
 Pragma: no-cache
-Cache-Control: no-cache
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36
-Upgrade: websocket
-Origin: http://localhost:3000
 Sec-WebSocket-Version: 13
-Accept-Encoding: gzip, deflate, br, zstd
-Accept-Language: en-US,en;q=0.9,si;q=0.8,es;q=0.7
-Sec-WebSocket-Key: TIN1zvPl1u0QartUB/XTUQ==
-Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+Upgrade: websocket
+Sec-WebSocket-Key: Z7tDLTG69Fa7VYo1q/1lRw==
+User-Agent: Mozilla/5.0 (iPhone; CPU iPhone OS 18_1_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Mobile/15E148 Safari/604.1
+Sec-WebSocket-Extensions: permessage-deflate
+Cache-Control: no-cache
+Connection: Upgrade
+Accept: */*
+Accept-Language: en-GB,en;q=0.9
+Priority: u=3, i
+Accept-Encoding: gzip, deflate
 
