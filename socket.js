@@ -34,6 +34,8 @@ function convertoBinary(buffer){
 
 }
 
+const sockets = [];
+
 const server = net.createServer((socket)=>{
     
     socket.once('data' , (buffer)=>{
@@ -41,9 +43,6 @@ const server = net.createServer((socket)=>{
         fs.writeFileSync('./buffer.txt' , buffer.toString() );
         const key = req.match(/Sec-WebSocket-Key: (.+)/i)[1];
         const secAccpetKey = crypto.createHash("sha1").update(key + MAGIC_STRING ).digest('base64');
-
-
-        // console.log(key , secAccpetKey);
 
         const headers = [
             'HTTP/1.1 101 Switching Protocols',
@@ -54,6 +53,12 @@ const server = net.createServer((socket)=>{
         ];
 
         socket.write(headers.join("\r\n"));
+
+        sockets.push(socket);
+        console.log(sockets.length);
+        sockets.forEach(soc=>{
+          soc.write(encodeWebSocketFrame("new device connected"));
+        })
 
 
         socket.on("data" , (buffer)=>{
@@ -82,11 +87,16 @@ const server = net.createServer((socket)=>{
             console.log({payload});
             console.log({decodeArray})
             console.log({text})
+
+
+            sockets.forEach(soc=>{
+              soc.write(encodeWebSocketFrame(text));
+            })
         })
     })
 })
 
 
-server.listen( 8080 ,"127.0.0.1", () => {
+server.listen( 8080 ,"0.0.0.0", () => {
   console.log('opened server on', server.address());
 });
